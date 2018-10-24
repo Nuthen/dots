@@ -23,7 +23,8 @@ function game:enter()
 	
 	self.font = font[24]
 	
-	local maxTextureSize = love.graphics.getSystemLimit('texturesize')
+    local limits = love.graphics.getSystemLimits()
+	local maxTextureSize = limits['texturesize']
 	local canvasSize = maxTextureSize
 	self.canvas = love.graphics.newCanvas(canvasSize, canvasSize)
 	self.canvas:setFilter('linear', 'linear') -- line traces will look a little clearer when zoomed
