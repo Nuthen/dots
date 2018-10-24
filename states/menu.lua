@@ -22,17 +22,17 @@ function menu:mousepressed(x, y, mbutton)
     if console.mousepressed(x, y, mbutton) then
         return
     end
-    
+
     state.switch(game)
 end
 
 function menu:draw()
-	local text = 'Grav'
-	local x = love.graphics.getWidth()/2 - fontLight[164]:getWidth(text)/2
+    local text = 'Grav'
+    local x = love.graphics.getWidth()/2 - fontLight[164]:getWidth(text)/2
     local y = love.graphics.getHeight()*1/3
-	love.graphics.setFont(fontLight[164])
+    love.graphics.setFont(fontLight[164])
     love.graphics.print(text, x, y)
-	
+
     local text = "ENTER"
     local x = love.graphics.getWidth()/2 - font[48]:getWidth(text)/2
     local y = love.graphics.getHeight()*2/3
