@@ -18,33 +18,33 @@ function game:enter()
     self.gridLineWidth = 2
     self.snapDotSize = 8
     self.gameSpeed = 50
-    
+
     self.gridColor = {127, 129, 130, 150}
-    
+
     self.font = font[24]
-    
+
     local limits = love.graphics.getSystemLimits()
     local maxTextureSize = limits['texturesize']
     local canvasSize = maxTextureSize
     self.canvas = love.graphics.newCanvas(canvasSize, canvasSize)
     self.canvas:setFilter('linear', 'linear') -- line traces will look a little clearer when zoomed
-    
+
     -- makes the entire canvas white, this is done so that line traces do not have a black outline
     self.canvas:renderTo(function()
         love.graphics.setColor(255, 255, 255)
         love.graphics.rectangle('fill', 0, 0, self.canvas:getWidth(), self.canvas:getHeight())
     end)
-    
+
     -- origin
     self.startX = self.canvas:getWidth()/2 - love.graphics.getWidth()/2
     self.startY = self.canvas:getHeight()/2 - love.graphics.getHeight()/2
-    
+
     -- camera is centered on the canvas
     self.camera = {x = self.startX, y = self.startY, zoom = 1, speed = 400, targetBool = false, target = 1}
-    
+
     self.dotSystem = DotSystem:new()
     self.UI = UI:new()
-    
+
     self.spawnClicked = false
     self.oldScreenWidth, self.oldScreenHeight = love.graphics.getWidth(), love.graphics.getHeight()
 end
@@ -52,31 +52,31 @@ end
 function game:update(dt)
 
     self.dotSystem:update(dt * self.gameSpeed, self.freeze)
-    
+
     if self.camera.targetBool then -- focused camera
         if self.dotSystem.dots[self.camera.target] then
             self.camera.x = self.dotSystem.dots[self.camera.target].x - love.graphics.getWidth()/2
             self.camera.y = self.dotSystem.dots[self.camera.target].y - love.graphics.getHeight()/2
         end
     end
-    
+
     local cameraX = self.camera.x
     local cameraY = self.camera.y
-    
+
     local speed = self.camera.speed*dt/self.camera.zoom
     if love.keyboard.isDown('lshift', 'rshift') then speed = speed * 2 end
     if love.keyboard.isDown('w', 'up') then self.camera.y = self.camera.y - speed end
     if love.keyboard.isDown('s', 'down') then self.camera.y = self.camera.y + speed end
     if love.keyboard.isDown('a', 'left') then self.camera.x = self.camera.x - speed end
     if love.keyboard.isDown('d', 'right') then self.camera.x = self.camera.x + speed end
-    
+
     -- if camera is moved by the player, exit follow camera mode
     if self.camera.x ~= cameraX or self.camera.y ~= cameraY then
         if self.camera.targetBool then
             self.UI:updateButton('Follow')
         end
     end
-    
+
     self.UI:update()
 end
 
@@ -84,40 +84,40 @@ function game:keypressed(key, isrepeat)
     if console.keypressed(key) then
         return
     end
-    
+
     if key == 'f1' then -- Toggle Trace
         self.UI:updateButton('Trace')
     end
-    
+
     if key == 'f2' then -- Toggle Objects
         self.UI:updateButton('Objects')
     end
-    
+
     -- bigger objects absorb smaller objects (Osmos)
     if key == 'f3' then -- Toggle Objects
         self.UI:updateButton('Absorb')
     end
-    
+
     if key == 'f4' then -- Toggle Limit
         self.UI:updateButton('Directions')
     end
-    
+
     if key == 'f5' then -- Toggle Follow
         self.UI:updateButton('Follow')
     end
-    
+
     -- move the camera to the origin
     if key == 'f6' then
         --self:resetCamera()
         self.UI:updateButton('Origin')
     end
-    
+
     -- reset everything
     if key == 'f7' then -- clear
         --self:clear()
         self.UI:updateButton('Clear')
     end
-    
+
     -- toggle help text
     if key == 'f9' then
         if self.help then
@@ -126,7 +126,7 @@ function game:keypressed(key, isrepeat)
             self.help = true
         end
     end
-    
+
     -- toggle grid snapping
     if key == 'f10' then
         if self.grid then
@@ -135,7 +135,7 @@ function game:keypressed(key, isrepeat)
             self.grid = true
         end
     end
-    
+
     -- toggle crosshair in the center
     if key == 'f11' then
         if self.showCenter then
@@ -144,17 +144,17 @@ function game:keypressed(key, isrepeat)
             self.showCenter = true
         end
     end
-    
+
     -- toggle fullscreen
     if key == 'f12' then
         self:toggleFullscreen()
     end
-    
+
     -- pause simulation, useful for setting up objects
     if key == ' ' then
         self.UI:updateButton('Pause')
     end
-    
+
     -- activate and switch through entities to focus the camera on
     if #self.dotSystem.dots > 0 then
         if key == ',' then -- <
@@ -165,7 +165,7 @@ function game:keypressed(key, isrepeat)
             else
                 self.camera.target = #self.dotSystem.dots
             end
-            
+
         elseif key == '.' then -- >
             if not self.camera.targetBool then
                 self.UI:updateButton('Follow')
@@ -176,13 +176,13 @@ function game:keypressed(key, isrepeat)
             end
         end
     end
-    
+
     if key == '=' then -- +
         self:changeDirections(1)
     elseif key == '-' then
         self:changeDirections(-1)
     end
-    
+
     if key == '1' then
         self.UI:updateButton('Ship')
     elseif key == '2' then
@@ -192,7 +192,7 @@ function game:keypressed(key, isrepeat)
     elseif key == '4' then
         self.UI:updateButton('Repel Planet')
     end
-    
+
     if key == 'delete' then
         if self.camera.targetBool and self.dotSystem.dots[self.camera.target] then
             self.dotSystem.dots[self.camera.target].destroy = true
@@ -204,23 +204,17 @@ function game:mousepressed(x, y, mbutton)
     if console.mousepressed(x, y, mbutton) then
         return
     end
-    
-    if mbutton == 'wu' and self.camera.zoom < self.zoomMax then
-        self.camera.zoom = self.camera.zoom + .1
-    elseif mbutton == 'wd' and self.camera.zoom >= .2 then
-        self.camera.zoom = self.camera.zoom - .1
-    end
-    
-    if mbutton == 'l' then
+
+    if mbutton == 1 then
         local clicked = self.UI:mousepressed(x, y, mbutton)
-        
+
         if not clicked then
             if love.keyboard.isDown('lalt', 'ralt') or self.grid then
                 x, y = game:snapCoordinates(x, y)
             end
-        
+
             local newX, newY = self:convertCoordinates(x, y)
-            
+
             self.spawnClicked = true
             self.dotSystem:mousepressed(newX, newY, mbutton)
         end
@@ -231,39 +225,47 @@ function game:mousereleased(x, y, button)
     if love.keyboard.isDown('lalt', 'ralt') or self.grid then
         x, y = game:snapCoordinates(x, y)
     end
-    
+
     local newX, newY = self:convertCoordinates(x, y)
-    
+
     if self.spawnClicked then
         self.spawnClicked = false
         self.dotSystem:mousereleased(newX, newY, button, self.spawnObjectName)
     end
 end
 
+function game:wheelmoved(x, y)
+    if y > 0 and self.camera.zoom < self.zoomMax then
+        self.camera.zoom = self.camera.zoom + .1
+    elseif y < 0 and self.camera.zoom >= .2 then
+        self.camera.zoom = self.camera.zoom - .1
+    end
+end
+
 function game:draw()
     love.graphics.setFont(self.font)
     love.graphics.setColor(255, 255, 255)
-    
+
     love.graphics.push()
-    
+
     -- translate to origin, scale, translate back
     love.graphics.translate(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
     love.graphics.scale(self.camera.zoom)
     love.graphics.translate(-love.graphics.getWidth()/2, -love.graphics.getHeight()/2)
-    
-    
+
+
     -- translate to screen coordinates
     love.graphics.translate(-self.camera.x, -self.camera.y)
-    
+
     if self.lines then -- draw line traces
         love.graphics.draw(self.canvas)
     end
     love.graphics.pop()
-    
+
     if love.keyboard.isDown('lalt', 'ralt') or self.grid then
         love.graphics.setColor(self.gridColor)
         love.graphics.setLineWidth(self.gridLineWidth)
-        
+
         local snap = self.snap
         local dx, dy = (-self.camera.x % snap) - snap, (-self.camera.y % snap) - snap
         for i = 1, math.floor(love.graphics.getWidth()/snap) + 1 do
@@ -272,28 +274,28 @@ function game:draw()
         for i = 1, math.floor(love.graphics.getHeight()/snap) + 1 do
             love.graphics.line(dx, snap*i + dy, love.graphics.getWidth() + dx + snap, snap*i + dy)
         end
-        
+
         local snapX, snapY = self:snapCoordinates(love.mouse.getX(), love.mouse.getY())
         love.graphics.setColor(255, 0, 0, 150)
         love.graphics.circle('fill', snapX, snapY, self.snapDotSize)
     end
-    
+
     love.graphics.push()
-    
+
     -- translate to origin, scale, translate back
     love.graphics.translate(love.graphics.getWidth()/2, love.graphics.getHeight()/2)
     love.graphics.scale(self.camera.zoom)
     love.graphics.translate(-love.graphics.getWidth()/2, -love.graphics.getHeight()/2)
-    
-    
+
+
     -- translate to screen coordinates
     love.graphics.translate(-self.camera.x, -self.camera.y)
-    
-    
+
+
     if not self.hideObjects then -- draw entities
         self.dotSystem:draw()
     end
-    
+
     if self.showCenter then -- draw axis at the center
         love.graphics.setLineWidth(self.axisWidth/self.camera.zoom)
         love.graphics.setColor(0, 0, 0)
@@ -301,13 +303,13 @@ function game:draw()
         love.graphics.line(self.canvas:getWidth()/2 - d, self.canvas:getHeight()/2, self.canvas:getWidth()/2 + d, self.canvas:getHeight()/2)
         love.graphics.line(self.canvas:getWidth()/2, self.canvas:getHeight()/2 - d, self.canvas:getWidth()/2, self.canvas:getHeight()/2 + d)
     end
-    
+
     love.graphics.pop()
-    
+
     love.graphics.setColor(13, 15, 122)
-    
+
     love.graphics.print(love.timer.getFPS(), 5, 5)
-    
+
     if self.help then
         local helpText = {}
         table.insert(helpText, 'Spawn Object (LMB [+ ctrl])')
@@ -320,12 +322,12 @@ function game:draw()
         table.insert(helpText, 'Show Grid (F10/alt)')
         table.insert(helpText, 'Hide Axis (F11)')
         table.insert(helpText, 'Fullscreen (F12)')
-        
+
         for i = 1, #helpText do
             love.graphics.print(helpText[i], 5, 50+28*i)
         end
     end
-    
+
     self.UI:draw()
 end
 
@@ -335,7 +337,7 @@ function game:resize(w, h)
     self.startY = self.canvas:getHeight()/2 - love.graphics.getHeight()/2
 
     self.UI:resize(w, h)
-    
+
     self.UI:updateButton('Origin')
 end
 
@@ -353,7 +355,7 @@ function game:convertCoordinates(x, y)
     -- change mouse coordinates to game coordinates
     x = x + self.camera.x
     y = y + self.camera.y
-    
+
     -- translate to origin, scale, translate back
     x, y = x - self.camera.x - love.graphics.getWidth()/2, y - self.camera.y - love.graphics.getHeight()/2
     x, y = x / zoom, y / zoom
@@ -366,7 +368,7 @@ function game:snapCoordinates(x, y)
     local snap = self.snap
     local dx, dy = -(self.camera.x % snap), -(self.camera.y % snap)
     local newX, newY = math.floor((x-dx)/snap + .5) * snap + dx, math.floor((y-dy)/snap + .5) * snap + dy
-    
+
     return newX, newY
 end
 
@@ -378,10 +380,10 @@ function game:toggleFullscreen()
         self:resize(width, height)
     else
         self.oldScreenWidth, self.oldScreenHeight = love.graphics.getWidth(), love.graphics.getHeight()
-    
+
         local width, height = love.window.getDesktopDimensions()
         love.window.setMode(width, height, {fullscreen = true, fsaa = 4})
-        
+
         self:resize(width, height)
     end
 end
@@ -392,7 +394,7 @@ end
 function game:toggleTrace()
     if self.lines then
         self.lines = false
-        self.canvas:clear()
+        self.canvas:renderTo(function() love.graphics.clear() end)
     else
         self.lines = true
     end
@@ -464,7 +466,7 @@ function game:changeCameraTarget(b, target)
             self.camera.targetBool = true
             self.UI:updateButton('Follow')
         end
-        
+
         self.camera.target = target
     elseif #self.dotSystem.dots > 0 then
         if b < 0 then
@@ -488,18 +490,18 @@ function game:resetCamera()
     if self.camera.targetBool then
         self.UI:updateButton('Follow')
     end
-    
+
     self.camera.x = self.startX
     self.camera.y = self.startY
 end
 
 -- clear all objects
 function game:clear()
-    self.canvas:clear()
+    self.canvas:renderTo(function() love.graphics.clear() end)
     self.dotSystem.dots = {}
-    
+
     self.camera.target = 1
-    
+
     self:resetCamera()
 end
 

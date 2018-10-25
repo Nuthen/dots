@@ -66,7 +66,7 @@ function UI:update()
 end
 
 function UI:mousepressed(x, y, mbutton)
-    if mbutton == 'l' then
+    if mbutton == 1 then
         clicked1 = self.bar:mousepressed(x, y)
         clicked2 = self.objectBar:mousepressed(x, y)
         clicked3 = self.pane:mousepressed(x, y)

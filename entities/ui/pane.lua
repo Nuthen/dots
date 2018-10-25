@@ -37,7 +37,7 @@ end
 
 function Pane:update()
     if self.display() then
-        if love.mouse.isDown('l') and not game.dotSystem.spawning then -- fix
+        if love.mouse.isDown(1) and not game.dotSystem.spawning then -- fix
             local x, y = self.x, self.y
             local w, h = self.width, self.height
 
@@ -65,7 +65,7 @@ function Pane:update()
 end
 
 function Pane:mousemoved(x, y, dx, dy)
-    if self.display() and love.mouse.isDown('l') and self.moving then
+    if self.display() and love.mouse.isDown(1) and self.moving then
         self.x, self.y = self.x+dx, self.y+dy
         self:setSlider()
     end
